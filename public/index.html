@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PROTEVE™ v6.0 - Dashboard Inteligente</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #00A651;
+      --secondary: #003366;
+      --accent: #FF9900;
+      --danger: #CC0000;
+      --warning: #FFB81C;
+      --success: #00A651;
+      --info: #0066CC;
+      --light: #F5F5F5;
+      --dark: #1A1A1A;
+      --border: #CCCCCC;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, var(--secondary) 0%, #001a33 100%);
+      color: var(--dark);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    /* HEADER */
+    .header {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border-left: 8px solid var(--primary);
+    }
+
+    .header h1 {
+      color: var(--secondary);
+      font-size: 32px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .header-logo {
+      width: 50px;
+      height: 50px;
+      background: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 24px;
+    }
+
+    .header-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid var(--border);
+    }
+
+    .header-stat {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .header-stat-label {
+      font-size: 12px;
+      color: #999;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .header-stat-value {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--secondary);
+    }
+
+    /* STATUS BAR */
+    .status-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .status-card {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      border-left: 6px solid var(--primary);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .status-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .status-card.warning {
+      border-left-color: var(--warning);
+    }
+
+    .status-card.danger {
+      border-left-color: var(--danger);
+    }
+
+    .status-card.success {
+      border-left-color: var(--success);
+    }
+
+    .status-card-label {
+      font-size: 12px;
+      color: #999;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .status-card-value {
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--secondary);
+      margin-bottom: 5px;
+    }
+
+    .status-card-unit {
+      font-size: 12px;
+      color: #999;
+    }
+
+    /* GRID LAYOUT */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    }
+
+    /* CARDS */
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid var(--light);
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: var(--secondary);
+    }
+
+    .card-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .badge-success {
+      background: #E8F5E9;
+      color: var(--success);
+    }
+
+    .badge-warning {
+      background: #FFF3E0;
+      color: var(--warning);
+    }
+
+    .badge-danger {
+      background: #FFEBEE;
+      color: var(--danger);
+    }
+
+    /* PHASES DISPLAY */
+    .phases-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .phase-box {
+      background: var(--light);
+      padding: 15px;
+      border-radius: 6px;
+      border-left: 4px solid var(--primary);
+      text-align: center;
+    }
+
+    .phase-label {
+      font-size: 12px;
+      color: #999;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .phase-value {
+      font-size: 20px;
+      font-weight: bold;
+      color: var(--secondary);
+      margin-bottom: 5px;
+    }
+
+    .phase-unit {
+      font-size: 11px;
+      color: #999;
+    }
+
+    /* ANOMALIES */
+    .anomalies-list {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .anomaly-item {
+      padding: 12px;
+      margin-bottom: 10px;
+      border-left: 4px solid var(--warning);
+      background: #FFF9E6;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    .anomaly-item.critical {
+      border-left-color: var(--danger);
+      background: #FFEBEE;
+    }
+
+    .anomaly-type {
+      font-weight: 600;
+      color: var(--secondary);
+      margin-bottom: 4px;
+    }
+
+    .anomaly-message {
+      color: #666;
+      font-size: 12px;
+    }
+
+    /* INSIGHTS */
+    .insights-box {
+      background: linear-gradient(135deg, var(--primary) 0%, #009933 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .insights-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .insights-list {
+      list-style: none;
+    }
+
+    .insights-list li {
+      padding: 8px 0;
+      padding-left: 25px;
+      position: relative;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .insights-list li:before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      font-weight: bold;
+    }
+
+    /* BUTTONS */
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      text-transform: uppercase;
+      font-size: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #008040;
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: var(--secondary);
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #001a4d;
+      transform: translateY(-2px);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #990000;
+      transform: translateY(-2px);
+    }
+
+    /* CHARTS */
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin-bottom: 20px;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 24px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .phases-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+    }
+
+    /* LOADING */
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: white;
+      font-size: 18px;
+    }
+
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid white;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- HEADER -->
+    <div class="header">
+      <h1>
+        <div class="header-logo">P</div>
+        PROTEVE™ v6.0 - Dashboard Inteligente
+      </h1>
+      <div class="header-info">
+        <div class="header-stat">
+          <span class="header-stat-label">Status</span>
+          <span class="header-stat-value" id="status">Conectando...</span>
+        </div>
+        <div class="header-stat">
+          <span class="header-stat-label">Última Atualização</span>
+          <span class="header-stat-value" id="lastUpdate">--:--:--</span>
+        </div>
+        <div class="header-stat">
+          <span class="header-stat-label">Consumo Médio</span>
+          <span class="header-stat-value" id="avgConsumption">-- W</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATUS BAR -->
+    <div class="status-bar" id="statusBar">
+      <div class="status-card success">
+        <div class="status-card-label">Tensão Média</div>
+        <div class="status-card-value" id="avgVoltage">220.0</div>
+        <div class="status-card-unit">Volts</div>
+      </div>
+      <div class="status-card success">
+        <div class="status-card-label">Corrente Média</div>
+        <div class="status-card-value" id="avgCurrent">12.5</div>
+        <div class="status-card-unit">Amperes</div>
+      </div>
+      <div class="status-card success">
+        <div class="status-card-label">Fator de Potência</div>
+        <div class="status-card-value" id="avgPF">0.92</div>
+        <div class="status-card-unit">-</div>
+      </div>
+      <div class="status-card">
+        <div class="status-card-label">Anomalias Detectadas</div>
+        <div class="status-card-value" id="anomalyCount">0</div>
+        <div class="status-card-unit">últimas 12h</div>
+      </div>
+    </div>
+
+    <!-- MAIN GRID -->
+    <div class="grid grid-2">
+      <!-- TELEMETRIA -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📊 Telemetria em Tempo Real</div>
+          <span class="card-badge badge-success">Online</span>
+        </div>
+        <div class="phases-grid" id="telemetry">
+          <div class="phase-box">
+            <div class="phase-label">Fase A</div>
+            <div class="phase-value">--</div>
+            <div class="phase-unit">V / A / W</div>
+          </div>
+          <div class="phase-box">
+            <div class="phase-label">Fase B</div>
+            <div class="phase-value">--</div>
+            <div class="phase-unit">V / A / W</div>
+          </div>
+          <div class="phase-box">
+            <div class="phase-label">Fase C</div>
+            <div class="phase-value">--</div>
+            <div class="phase-unit">V / A / W</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INSIGHTS IA -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🤖 Insights Inteligentes</div>
+          <span class="card-badge badge-success">IA Ativa</span>
+        </div>
+        <div class="insights-box">
+          <div class="insights-title">💡 Recomendações</div>
+          <ul class="insights-list" id="insights">
+            <li>Analisando padrões de consumo...</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANOMALIES -->
+    <div class="grid">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">⚠️ Anomalias Detectadas</div>
+          <span class="card-badge badge-warning">IA Monitorando</span>
+        </div>
+        <div class="anomalies-list" id="anomalies">
+          <p style="color: #999; text-align: center; padding: 20px;">Nenhuma anomalia detectada</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="grid">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🎮 Controles Remotos</div>
+        </div>
+        <div class="button-group">
+          <button class="btn-primary" onclick="sendCommand('ligar')">🔌 Ligar</button>
+          <button class="btn-danger" onclick="sendCommand('desligar')">🔴 Desligar</button>
+          <button class="btn-secondary" onclick="sendCommand('reset')">🔄 Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '/api';
+    let deviceId = 'PROTEVE-001';
+
+    async function fetchData() {
+      try {
+        const response = await axios.get(`${API_BASE}/device/${deviceId}`);
+        const data = response.data;
+
+        // Atualizar status
+        document.getElementById('status').textContent = '🟢 Online';
+        document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('pt-BR');
+
+        // Atualizar telemetria
+        if (data.telemetry && data.telemetry.length > 0) {
+          const latest = data.telemetry[data.telemetry.length - 1];
+          updateTelemetry(latest);
+        }
+
+        // Atualizar anomalias
+        if (data.anomalies && data.anomalies.length > 0) {
+          updateAnomalies(data.anomalies);
+        }
+
+        // Atualizar insights
+        if (data.insights) {
+          updateInsights(data.insights);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar dados:', error);
+        document.getElementById('status').textContent = '🔴 Offline';
+      }
+    }
+
+    function updateTelemetry(data) {
+      const html = `
+        <div class="phase-box">
+          <div class="phase-label">Fase A</div>
+          <div class="phase-value">${data.A.v.toFixed(1)}</div>
+          <div class="phase-unit">${data.A.i.toFixed(1)}A / ${data.A.p.toFixed(0)}W</div>
+        </div>
+        <div class="phase-box">
+          <div class="phase-label">Fase B</div>
+          <div class="phase-value">${data.B.v.toFixed(1)}</div>
+          <div class="phase-unit">${data.B.i.toFixed(1)}A / ${data.B.p.toFixed(0)}W</div>
+        </div>
+        <div class="phase-box">
+          <div class="phase-label">Fase C</div>
+          <div class="phase-value">${data.C.v.toFixed(1)}</div>
+          <div class="phase-unit">${data.C.i.toFixed(1)}A / ${data.C.p.toFixed(0)}W</div>
+        </div>
+      `;
+      document.getElementById('telemetry').innerHTML = html;
+
+      // Atualizar header stats
+      const avgVoltage = (data.A.v + data.B.v + data.C.v) / 3;
+      const avgCurrent = (data.A.i + data.B.i + data.C.i) / 3;
+      const avgConsumption = (data.A.p + data.B.p + data.C.p) / 3;
+
+      document.getElementById('avgVoltage').textContent = avgVoltage.toFixed(1);
+      document.getElementById('avgCurrent').textContent = avgCurrent.toFixed(1);
+      document.getElementById('avgConsumption').textContent = avgConsumption.toFixed(0) + ' W';
+    }
+
+    function updateAnomalies(anomalies) {
+      document.getElementById('anomalyCount').textContent = anomalies.length;
+
+      const html = anomalies.slice(-10).map(a => `
+        <div class="anomaly-item ${a.severity === 'critical' ? 'critical' : ''}">
+          <div class="anomaly-type">${a.type}</div>
+          <div class="anomaly-message">${a.message}</div>
+        </div>
+      `).join('');
+
+      document.getElementById('anomalies').innerHTML = html || '<p style="color: #999; text-align: center; padding: 20px;">Nenhuma anomalia detectada</p>';
+    }
+
+    function updateInsights(insights) {
+      const recommendations = insights.optimization || [];
+      const html = recommendations.map(r => `<li>${r}</li>`).join('');
+      document.getElementById('insights').innerHTML = html;
+    }
+
+    async function sendCommand(command) {
+      try {
+        const response = await axios.post(`${API_BASE}/command/${deviceId}`, { command });
+        alert(`✅ Comando "${command}" enviado com sucesso!`);
+      } catch (error) {
+        alert(`❌ Erro ao enviar comando: ${error.message}`);
+      }
+    }
+
+    // Atualizar dados a cada 5 segundos
+    fetchData();
+    setInterval(fetchData, 5000);
+  </script>
+</body>
+</html>

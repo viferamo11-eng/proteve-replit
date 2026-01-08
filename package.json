@@ -1,0 +1,29 @@
+{
+  "name": "proteve-v6",
+  "version": "6.0.0",
+  "description": "PROTEVE™ v6.0 - Servidor Inteligente com IA para Monitoramento de Sistemas Elétricos",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "proteve",
+    "iot",
+    "monitoring",
+    "ai",
+    "anomaly-detection"
+  ],
+  "author": "Manus AI",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
